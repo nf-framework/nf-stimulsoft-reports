@@ -1,0 +1,32 @@
+{
+    "name": "@nfjs/stimulsoft-reports",
+    "version": "1.0.0",
+    "description": "StimulsoftReports",
+    "license": "MIT",
+    "type": "module",
+    "main": "index.js",
+    "repository": {
+        "url": "https://github.com/nf-framework/nf-stimulsoft-reports.git"
+    },
+    "author": {
+        "name": "Azat Yamalov",
+        "email": "yamalov.azat@live.com"
+    },
+    "contributors": [
+        {
+            "name": "Andrey Maksimov",
+            "email": "andrmaxmail@gmail.com"
+        },
+        {
+            "name": "Dmitry Boikov",
+            "email": "boikovdv@gmail.com"
+        }
+    ],
+    "exports": {
+        ".": "./index.js",
+        "./nf-module.js": "./nf-module.js"
+    },
+    "dependencies": {
+        "stimulsoft-reports-js": "latest"
+    }
+}
