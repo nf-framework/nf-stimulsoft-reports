@@ -15,6 +15,32 @@ class PlStimulsoftDesigner extends PlElement {
     static template = html`
         <iframe id="designer" src="iframe/stimulsoft-designer.html"></iframe>
     `;
+
+    connectedCallback(){
+        super.connectedCallback();
+    }
+
+    setReport(reportJson) {
+        this.$.designer.contentWindow.setReport(reportJson);
+    }
+
+    setNewReport() {
+        this.$.designer.contentWindow.setNewReport();
+    }
+
+    setProvider(provider) {
+        this.$.designer.contentWindow.setProvider(provider);
+    }
+
+    async getVariables() {
+        const variables = this.$.designer.contentWindow.stiDesigner.report.getDictionary().variables.list.map(x => ({ name: x.alias }));
+        return variables;
+    }
+
+    async getReportJson() {
+        const json = await this.$.designer.contentWindow.stiDesigner.report.saveToJsonString();
+        return json;
+    }
 }
 
 customElements.define('pl-stimulsoft-designer', PlStimulsoftDesigner);
