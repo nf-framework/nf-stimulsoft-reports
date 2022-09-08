@@ -29,6 +29,7 @@
     "dependencies": {
         "stimulsoft-reports-js": "^2022.2.1",
         "stimulsoft-data-adapter": "^2022.2.1",
-        "tar": "^6.1.11"
+        "tar": "^6.1.11",
+        "file-saver": "^2.0.5"
     }
 }

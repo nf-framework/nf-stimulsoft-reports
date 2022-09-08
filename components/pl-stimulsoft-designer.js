@@ -17,9 +17,19 @@ class PlStimulsoftDesigner extends PlElement {
         <iframe id="designer" src="iframe/stimulsoft-designer.html"></iframe>
     `;
 
-    connectedCallback(){
-        super.connectedCallback();
-    }
+connectedCallback(){
+    super.connectedCallback();
+    this.$.designer.addEventListener('load', () => {
+        fetch("@stimulsoft/key", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        }).then((resp) => {
+            resp.json().then((key) => {
+                this.$.designer.contentWindow.setLicense(key.data);
+            });
+        });
+    })
+}
 
     setReport(reportJson) {
         this.$.designer.contentWindow.setReport(reportJson);

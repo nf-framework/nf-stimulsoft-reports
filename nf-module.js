@@ -52,7 +52,9 @@ let menu = await nfApi.loadJSON(__dirname + '/menu.json');
 function init() {
     registerCustomElementsDir('@nfjs/stimulsoft-reports/components');
     registerLibDir('iframe/stimulsoft-designer.html', __dirname + '/iframe/stimulsoft-designer.html', { singleFile: true })
+    registerLibDir('iframe/stimulsoft-viewer.html', __dirname + '/iframe/stimulsoft-viewer.html', { singleFile: true })
     registerLibDir('stimulsoft-reports-js', null, { denyPathReplace: true, minify: 'deny' });
+    registerLibDir('file-saver');
 
     web.on('POST', '/@stimulsoft/adapter', { middleware: ['session', 'auth', 'json'] }, (context) => {
         const onProcess = function (result) {
@@ -69,6 +71,11 @@ function init() {
             if (command.database === 'PostgreSQL') PostgreSQLAdapter(command, onProcess, context, command.provider);
         });
     });
+
+    web.on('POST', '/@stimulsoft/key', { middleware: ['session', 'auth', 'json'] }, (context) => {
+        context.send({ data: config['@nfjs/stimulsoft-reports']?.license })
+    });
+
 
     web.on('POST', '/@stimulsoft/providers', { middleware: ['session', 'auth', 'json'] }, (context) => {
         context.send({ data: Object.keys(config.data_providers).map(x => ({ text: x, value: x })) })
@@ -111,15 +118,17 @@ function init() {
 
     web.on('POST', '/@reports/getReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
         const reportName = context.body.args.reportName;
-        const variables = context.body.args.variables;
         const options = context.body.args.options;
-        const provider = context.body.args.provider;
         const filePath = await getPathByReportName(reportName, options && options.module);
+        const metaData = await unpack(filePath, 'meta.json');
         const reportProvider = new StimulsoftReportProvider();
 
-        const tpl = await unpack(filePath, reportProvider.getFormExtension());
-        const report = await reportProvider.getReport(context, variables, tpl, provider);
-        context.send({ data: report });
+        const result = {
+            template: await unpack(filePath, reportProvider.getFormExtension()),
+            meta: metaData
+        };
+
+        context.send({ data: result });
     });
 
     web.on('POST', '/@reports/printReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {

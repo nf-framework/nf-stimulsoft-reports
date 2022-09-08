@@ -16,11 +16,12 @@
 
     <!-- Report designer scripts, may be external -->
     <script type="text/javascript">
+        StiOptions.WebServer.url = '@stimulsoft/adapter';
+
         let options = new Stimulsoft.Designer.StiDesignerOptions();
         options.appearance.fullScreenMode = true;
         this.stiDesigner = new Stimulsoft.Designer.StiDesigner(options);
 
-        StiOptions.WebServer.url = '@stimulsoft/adapter';
 
         this.setReport = (reportJson) => {
             const report = new Stimulsoft.Report.StiReport();
@@ -37,7 +38,7 @@
             this.provider = provider;
         }
 
-        this.setLicence = (key) => {
+        this.setLicense = (key) => {
             Stimulsoft.Base.StiLicense.key = key;
         }
 

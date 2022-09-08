@@ -21,7 +21,7 @@ export default class ReportList extends PlForm {
                 <pl-stimulsoft-designer id="designer"></pl-stimulsoft-designer>
             </pl-flex-layout>
         </pl-flex-layout>
-        <pl-action id="get" endpoint="/api/getReport"></pl-action>
+        <pl-action id="get" endpoint="/@reports/getReport"></pl-action>
         <pl-dataset endpoint="@stimulsoft/providers" id="dsProviders" data="{{providers}}"></pl-dataset>
     `;
 
@@ -37,7 +37,7 @@ export default class ReportList extends PlForm {
         this.$.designer.root.querySelector('iframe').addEventListener('load', async () => {
             this.designerLoaded = true;
             if (this.reportName) {
-                const data = await this.$.get.execute({ reportName: this.args.reportName });
+                const data = await this.$.get.execute({ reportName: this.reportName });
                 this.meta = data.meta;
                 this.$.designer.setReport(data.template);
                 this.provider = this.meta.provider || 'default';

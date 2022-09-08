@@ -5,40 +5,43 @@ export default class ReportList extends PlForm {
     static properties = {
         formTitle: { type: String, value: 'Отчеты' },
         reports: { value: () => [] },
-        active: {}
+        selected: { value: () => null }
     }
 
     static template = html`
         <pl-flex-layout fit>
-            <pl-grid data="{{reports}}" control="{{reports_control}}" active-record="{{active}}">
+            <pl-grid data="{{reports}}" control="{{reports_control}}" selected="{{selected}}">
                 <pl-grid-column field="name" header="Наименование"></pl-grid-column>
-                <pl-grid-column field="moduleName" header="Модуль" autosize="true" align="left"></pl-grid-column>
-                <pl-grid-column field="description" header="Описание" slot="toolbar"></pl-grid-column>
+                <pl-grid-column field="moduleName" header="Модуль"></pl-grid-column>
+                <pl-grid-column field="description" header="Описание"></pl-grid-column>
                 <pl-flex-layout slot="top-toolbar">
                     <pl-button label="Новый отчет" variant="primary" on-click="[[onNewTap]]"></pl-button>
-                    <pl-button label="Редактировать" on-click="[[onEditTap]]" variant="primary" disabled="[[!active]]"></pl-button>
-                    <pl-button label="Печать" variant="primary" size="medium" on-click="[[onPrintTap]]" disabled="[[!active]]"></pl-button>
-                </pl-layout>
+                    <pl-button label="Редактировать" on-click="[[onEditTap]]" variant="secondary" disabled="[[!selected]]">
+                    </pl-button>
+                    <pl-button label="Печать" variant="secondary" on-click="[[onPrintTap]]" disabled="[[!selected]]">
+                    </pl-button>
+                </pl-flex-layout>
             </pl-grid>
         </pl-flex-layout>
         <pl-dataset data="{{reports}}" id="dsReports" endpoint="/@reports/list"></pl-dataset>
     `;
 
-    onConnect(){
+    onConnect() {
         this.$.dsReports.execute();
     }
 
     async onPrintTap(event) {
         try {
-            await NF.openReport(this.active.json.name, null, { module: this.active.json.moduleName });
+            const checkInfo = await NF.openReport(this.selected.name, null, { module: this.selected.moduleName });
+            this.open('stimulsoft.viewer', { reportName: checkInfo.reportName, variables: checkInfo.data.variables, options: checkInfo.options })
         } catch (err) {
-            document.dispatchEvent(new CustomEvent('error', { detail: { error: err.message } }));
+            this.notify(err.message);
         }
         this.$.dsReports.execute();
     }
 
     async onEditTap(event) {
-        await this.open('stimulsoft.designer', { reportName: this.active.json.name });
+        await this.open('stimulsoft.designer', { reportName: this.selected.name });
         await this.$.dsReports.execute();
     }
 

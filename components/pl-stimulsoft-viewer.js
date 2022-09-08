@@ -17,15 +17,23 @@ class PlStimulsoftDesigner extends PlElement {
         <iframe id="viewer" src="iframe/stimulsoft-viewer.html"></iframe>
     `;
 
-    connectedCallback(){
+    connectedCallback() {
         super.connectedCallback();
         this.$.viewer.addEventListener('load', () => {
-            
+            fetch("@stimulsoft/key", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            }).then((resp) => {
+                resp.json().then((key) => {
+                    this.$.viewer.contentWindow.setLicense(key.data);
+                });
+            });
         })
     }
 
     setReport(reportJson) {
         this.$.viewer.contentWindow.setReport(reportJson);
-    }}
+    }
+}
 
 customElements.define('pl-stimulsoft-viewer', PlStimulsoftDesigner);
