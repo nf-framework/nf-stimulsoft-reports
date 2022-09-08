@@ -1,16 +1,53 @@
 import { web } from "@nfjs/back";
 import { registerCustomElementsDir, registerLibDir } from "@nfjs/front-server";
 import path from 'path';
-
+import { api, api as nfApi, config, extension } from '@nfjs/core';
 import PostgreSQLAdapter from './lib/PostgreSQLAdapter.js';
+import StimulsoftReportProvider from './lib/StimulsoftReportProvider.js';
+
 import adapter from "stimulsoft-data-adapter";
+import glob from 'fast-glob';
+
+import fs from "fs";
+import tar from "tar";
 
 const meta = {
     require: {
         after: '@nfjs/back-dbfw'
     }
 };
+
+async function getPathByReportName(reportName, moduleName) {
+    const filePath = moduleName
+        ? await extension.getFiles(`reports/${reportName}.tar.gz`, false, false, false, false, [moduleName])
+        : await extension.getFiles(`reports/${reportName}.tar.gz`);
+    return filePath;
+}
+
+/**
+ * Получить данные из архива
+ * @param {String} reportPath путь к файлу отчета
+ * @param {String} extension расширение файла отчета
+ */
+async function unpack(reportPath, extension) {
+    const data = [];
+    await tar.list({
+        file: reportPath,
+        onentry: (entry) => {
+            if (entry.path.endsWith(extension)) {
+                entry.on('data', c => data.push(c));
+            }
+        }
+    });
+
+    return JSON.parse(Buffer.concat(data));
+}
+
+const reportsScopes = '@*/*/reports/*';
+
 const __dirname = path.join(path.dirname(decodeURI(new URL(import.meta.url).pathname))).replace(/^\\([A-Z]:\\)/, "$1");
+let menu = await nfApi.loadJSON(__dirname + '/menu.json');
+
 
 function init() {
     registerCustomElementsDir('@nfjs/stimulsoft-reports/components');
@@ -31,11 +68,148 @@ function init() {
             const command = adapter.getCommand(data);
             if (command.database === 'PostgreSQL') PostgreSQLAdapter(command, onProcess, context, command.provider);
         });
+    });
 
+    web.on('POST', '/@stimulsoft/providers', { middleware: ['session', 'auth', 'json'] }, (context) => {
+        context.send({ data: Object.keys(config.data_providers).map(x => ({ text: x, value: x })) })
+    });
+
+    web.on('POST', '/@reports/listPackages', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        context.send({ data: await api.getWorkspaces() })
+    });
+
+    web.on('POST', '/@reports/checkReportData', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const reportName = context.body.reportName;
+        const options = context.body.options;
+        const variables = (context.body.variables && Object.entries(context.body.variables).map(x => ({ name: x[0], value: x[1] }))) || [];
+        const filePath = await getPathByReportName(reportName, options && options.module);
+        if (filePath) {
+            const metaData = await unpack(filePath, 'meta.json');
+            const variablesToShow = [];
+            metaData.variables.forEach((variable) => {
+                const varToShow = variables.length > 0
+                    ? variables.find(x => x.name === variable.name)
+                    : variable;
+                varToShow.type = variable.type;
+                varToShow.userInputRequired = variable.userInputRequired;
+                variablesToShow.push(varToShow);
+            });
+            
+            context.send({
+                showForm: 'stimulsoft.viewer',
+                variables: variablesToShow,
+                renderEngine: metaData.renderEngine,
+                provider: metaData.provider
+            });
+        } else {
+            const errMsg = options && options.module
+                ? `Печатная форма с кодом ${reportName} в модуле ${options.module} не найдена`
+                : `Печатная форма с кодом ${reportName} не найдена`;
+            context.send(api.nfError(new Error(errMsg)));
+        }
+    });
+
+    web.on('POST', '/@reports/getReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const reportName = context.body.args.reportName;
+        const variables = context.body.args.variables;
+        const options = context.body.args.options;
+        const provider = context.body.args.provider;
+        const filePath = await getPathByReportName(reportName, options && options.module);
+        const reportProvider = new StimulsoftReportProvider();
+
+        const tpl = await unpack(filePath, reportProvider.getFormExtension());
+        const report = await reportProvider.getReport(context, variables, tpl, provider);
+        context.send({ data: report });
+    });
+
+    web.on('POST', '/@reports/printReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const reportName = context.body.args.reportName;
+        const variables = context.body.args.variables;
+        const options = context.body.args.options;
+        const provider = context.body.args.provider;
+        const filePath = await getPathByReportName(reportName, options && options.module);
+        const reportProvider = new StimulsoftReportProvider();
+
+        const tpl = await unpack(filePath, reportProvider.getFormExtension());
+        const report = await reportProvider.getReport(context, variables, tpl, provider);
+        context.send({ data: report });
+    });
+
+    web.on('POST', '/@reports/downloadReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const reportName = context.body.reportName;
+        const variables = context.body.variables;
+        const extension = context.body.extension;
+        const options = context.body.options;
+        const filePath = await getPathByReportName(reportName, options && options.module);
+        const reportProvider = new StimulsoftReportProvider();
+
+        const tpl = await unpack(filePath, reportProvider.getFormExtension());
+        const reportData = await reportProvider.getReportForExport(context, variables, tpl, extension);
+        context.send(reportData);
+    });
+
+    web.on('POST', '/@reports/list', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const modulesRoot = path.join(process.cwd(), 'node_modules');
+        const result = [];
+        const reports = await glob(reportsScopes, {
+            cwd: modulesRoot, followSymlinkedDirectories: true
+        });
+
+        await Promise.all(reports.map((mod) => {
+            const data = [];
+            const pathToFile = path.join(modulesRoot, mod);
+            return tar.list({
+                file: pathToFile,
+                onentry: (entry) => {
+                    if (entry.path.endsWith('meta.json')) {
+                        entry.on('data', c => data.push(c));
+                    }
+                }
+            })
+                .then((err) => {
+                    const buf = Buffer.concat(data);
+                    const json = JSON.parse(buf);
+                    result.push({
+                        name: json.name,
+                        moduleName: json.moduleName,
+                        description: json.description,
+                        path: pathToFile
+                    });
+                });
+        }));
+
+        context.send({ data: result });
+    });
+
+
+    web.on('POST', '/@reports/saveReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
+        const reportTpl = context.body.args.jsonData;
+        const modulePath = context.body.args.modulePath;
+        const reportMeta = JSON.parse(context.body.args.metaInfo);
+        const packageJson = JSON.parse(fs.readFileSync(path.join(modulePath, 'package.json')));
+        reportMeta.moduleName = packageJson.name;
+        const reportDir = path.join(modulePath, 'reports', reportMeta.name);
+        const metaPath = path.join(modulePath, 'reports', reportMeta.name, `${reportMeta.name}_meta.json`);
+        const tplPath = path.join(modulePath, 'reports', reportMeta.name, `${reportMeta.name}.mrt`);
+        fs.mkdirSync(reportDir, { recursive: true });
+        fs.writeFileSync(metaPath, Buffer.from(JSON.stringify(reportMeta)));
+        fs.writeFileSync(tplPath, Buffer.from(reportTpl));
+        await tar.create({
+            cwd: path.join(modulePath, 'reports'),
+            gzip: true,
+            file: path.join(modulePath, 'reports', `${reportMeta.name}.tar.gz`)
+        }, [reportMeta.name]);
+
+        fs.unlinkSync(metaPath);
+        fs.unlinkSync(tplPath);
+        fs.rmdirSync(reportDir);
+
+        context.send({ data: 'success' });
     });
 }
 
 export {
     init,
-    meta
+    meta,
+    menu
 };
