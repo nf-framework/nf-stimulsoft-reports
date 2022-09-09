@@ -54,6 +54,9 @@ NF.printReport = async (reportName, variables, extension, options) => new Promis
             });
             const downloadData = await downloadResp.json();
             const blob = new Blob([new Uint8Array(downloadData)], { type: 'application/pdf' });
+            var fileURL = URL.createObjectURL(blob);
+            window.open(fileURL);
+
             resolve();
         }
     }
