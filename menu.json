@@ -1,13 +1,7 @@
 [
     {
-        "caption":  "Отчеты",
-        "path":     "",
-        "icon":     "report",
-        "order":    100
-    },
-    {
-        "caption":  "Печатные формы",
-        "path":     "Отчеты",
+        "caption":  "Дизайнер отчетов",
+        "path":     "Система",
         "icon":     "report",
         "form":     "reports.list",
         "guid":     "81e16552-c46c-412b-a25f-95bc84e7de95",
