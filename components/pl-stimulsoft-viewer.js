@@ -34,6 +34,9 @@ class PlStimulsoftDesigner extends PlElement {
     setReport(reportJson) {
         this.$.viewer.contentWindow.setReport(reportJson);
     }
+    setVariables(vars) {
+        this.$.viewer.contentWindow.setVariables(vars);
+    }
 }
 
 customElements.define('pl-stimulsoft-viewer', PlStimulsoftDesigner);

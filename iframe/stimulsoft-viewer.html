@@ -30,6 +30,17 @@
 		this.setLicense = (key) => {
             Stimulsoft.Base.StiLicense.key = key;
 		}
+        this.setVariables = variables =>
+        {
+            let report = this.viewer.report;
+            if (variables && report.dictionary.variables.list.length > 0) {
+                Object.entries(variables)
+                    .forEach(([name,value]) => {
+                        const variable = report.dictionary.variables.getByName(name);
+                        variable.setValue(value);
+                    });
+            }
+        }
 	</script>
 </head>
 <body>

@@ -43,7 +43,7 @@ async function unpack(reportPath, extension) {
     return JSON.parse(Buffer.concat(data));
 }
 
-const reportsScopes = '@*/*/reports/*';
+const reportsScopes = '**/reports/*.tar.gz';
 
 const __dirname = path.join(path.dirname(decodeURI(new URL(import.meta.url).pathname))).replace(/^\\([A-Z]:\\)/, "$1");
 let menu = await nfApi.loadJSON(__dirname + '/menu.json');

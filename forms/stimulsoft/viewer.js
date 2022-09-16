@@ -4,7 +4,8 @@ import { PlForm } from "@nfjs/front-pl/components/pl-form.js";
 export default class ReportList extends PlForm {
     static properties = {
         formTitle: { type: String, value: 'Отчет' },
-        reportName: { value: () => null }
+        reportName: { value: () => null },
+        variables: { type: Object }
     }
 
     static template = html`
@@ -19,6 +20,9 @@ export default class ReportList extends PlForm {
         this.$.viewer.shadowRoot.querySelector('iframe').addEventListener('load', async () => {
             const data = await this.$.get.execute({ reportName: this.reportName });
             this.$.viewer.setReport(data.template);
+            if (this.variables) {
+                this.$.viewer.setVariables(this.variables);
+            }
         });
     }
 }
