@@ -135,26 +135,33 @@ function init() {
         const reportName = context.body.args.reportName;
         const variables = context.body.args.variables;
         const options = context.body.args.options;
+        const extension = context.body.extension;
         const provider = context.body.args.provider;
         const filePath = await getPathByReportName(reportName, options && options.module);
         const reportProvider = new StimulsoftReportProvider();
 
         const tpl = await unpack(filePath, reportProvider.getFormExtension());
-        const report = await reportProvider.getReport(context, variables, tpl, provider);
+        const report = await reportProvider.getReport(context, variables, tpl, provider, extension);
         context.send({ data: report });
     });
 
     web.on('POST', '/@reports/downloadReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
         const reportName = context.body.reportName;
         const variables = context.body.variables;
-        const extension = context.body.extension;
         const options = context.body.options;
         const filePath = await getPathByReportName(reportName, options && options.module);
         const reportProvider = new StimulsoftReportProvider();
 
         const tpl = await unpack(filePath, reportProvider.getFormExtension());
-        const reportData = await reportProvider.getReportForExport(context, variables, tpl, extension);
-        context.send(reportData);
+        const reportData = await reportProvider.getReportForExport(context, variables, tpl, options);
+
+        const headers = {
+            'Content-Disposition': `attachment; filename=${encodeURIComponent(reportName)}.xlsx`,
+            'Content-Transfer-Encoding': 'binary'
+        }
+
+        context.headers(headers);
+        context.send(reportData);        
     });
 
     web.on('POST', '/@reports/list', { middleware: ['session', 'auth', 'json'] }, async (context) => {

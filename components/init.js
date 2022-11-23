@@ -23,14 +23,13 @@ NF.openReport = async (reportName, variables, extension, options) => new Promise
     }
 });
 
-NF.printReport = async (reportName, variables, extension, options) => new Promise(async (resolve, reject) => {
+NF.printReport = async (reportName, variables, options) => new Promise(async (resolve, reject) => {
     try {
         const resp = await fetch('/@reports/checkReportData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 reportName: reportName,
-                extension: extension,
                 variables: variables,
                 options: options
             }),
@@ -46,17 +45,20 @@ NF.printReport = async (reportName, variables, extension, options) => new Promis
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     reportName: reportName,
-                    extension: extension,
                     variables: responseData.variables,
                     options: options,
                     provider: responseData.provider
                 }),
             });
-            const downloadData = await downloadResp.json();
-            const blob = new Blob([new Uint8Array(downloadData)], { type: 'application/pdf' });
-            var fileURL = URL.createObjectURL(blob);
-            window.open(fileURL);
-
+            const downloadData = await downloadResp.blob();
+            var url = window.URL.createObjectURL(downloadData);
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.href = url;
+            a.download = reportName + '.xlsx';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
             resolve();
         }
     }

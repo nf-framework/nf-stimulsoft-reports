@@ -15,11 +15,10 @@ export default class ReportList extends PlForm {
                 <pl-grid-column field="moduleName" header="Модуль"></pl-grid-column>
                 <pl-grid-column field="description" header="Описание"></pl-grid-column>
                 <pl-flex-layout slot="top-toolbar">
-                    <pl-button label="Новый отчет" variant="primary" on-click="[[onNewTap]]"></pl-button>
-                    <pl-button label="Редактировать" on-click="[[onEditTap]]" variant="secondary" disabled="[[!selected]]">
-                    </pl-button>
-                    <pl-button label="Печать" variant="secondary" on-click="[[onPrintTap]]" disabled="[[!selected]]">
-                    </pl-button>
+                    <pl-button label="Новый отчет" variant="primary" on-click="[[onNewClick]]"></pl-button>
+                    <pl-button label="Редактировать" on-click="[[onEditClick]]" variant="secondary" disabled="[[!selected]]"></pl-button>
+                    <pl-button label="Посмотреть" variant="secondary" on-click="[[onOpenClick]]" disabled="[[!selected]]"></pl-button>
+                    <pl-button label="Печать" variant="secondary" on-click="[[onPrintClick]]" disabled="[[!selected]]"></pl-button>
                 </pl-flex-layout>
             </pl-grid>
         </pl-flex-layout>
@@ -30,9 +29,9 @@ export default class ReportList extends PlForm {
         this.$.dsReports.execute();
     }
 
-    async onPrintTap(event) {
+    async onOpenClick(event) {
         try {
-            const checkInfo = await NF.openReport(this.selected.name, null, { module: this.selected.moduleName });
+            const checkInfo = await NF.openReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'xlsx' });
             this.open('stimulsoft.viewer', { reportName: checkInfo.reportName, variables: checkInfo.data.variables, options: checkInfo.options })
         } catch (err) {
             this.notify(err.message);
@@ -40,12 +39,23 @@ export default class ReportList extends PlForm {
         this.$.dsReports.execute();
     }
 
-    async onEditTap(event) {
+
+    async onPrintClick(event) {
+        try {
+            const checkInfo = await NF.printReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'xlsx' });
+            this.open('stimulsoft.viewer', { reportName: checkInfo.reportName, variables: checkInfo.data.variables, options: checkInfo.options })
+        } catch (err) {
+            this.notify(err.message);
+        }
+        this.$.dsReports.execute();
+    }
+
+    async onEditClick(event) {
         await this.open('stimulsoft.designer', { reportName: this.selected.name });
         await this.$.dsReports.execute();
     }
 
-    async onNewTap(event) {
+    async onNewClick(event) {
         await this.open('stimulsoft.designer', { isNew: true });
         await this.$.dsReports.execute();
     }
