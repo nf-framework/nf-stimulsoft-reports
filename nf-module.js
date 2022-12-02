@@ -156,7 +156,7 @@ function init() {
         const reportData = await reportProvider.getReportForExport(context, variables, tpl, options);
 
         const headers = {
-            'Content-Disposition': `attachment; filename=${encodeURIComponent(reportName)}.xlsx`,
+            'Content-Disposition': `attachment; filename=${encodeURIComponent(reportName)}.${options.extension}`,
             'Content-Transfer-Encoding': 'binary'
         }
 

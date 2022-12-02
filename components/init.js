@@ -55,7 +55,7 @@ NF.printReport = async (reportName, variables, options) => new Promise(async (re
             var a = document.createElement("a");
             document.body.appendChild(a);
             a.href = url;
-            a.download = reportName + '.xlsx';
+            a.download = reportName + `.${options.extension}`;
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
