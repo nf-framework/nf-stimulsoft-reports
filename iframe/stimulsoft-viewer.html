@@ -16,7 +16,9 @@
     <!-- Report designer scripts, may be external -->
     <script type="text/javascript">
 		StiOptions.WebServer.url = '@stimulsoft/adapter';
-		var options = new Stimulsoft.Viewer.StiViewerOptions();
+        Stimulsoft.Base.Localization.StiLocalization.setLocalizationFile("static/localizations/ru.xml", true);
+		
+        let options = new Stimulsoft.Viewer.StiViewerOptions();
         options.appearance.fullScreenMode = true;
 
 		this.viewer = new Stimulsoft.Viewer.StiViewer(options);
