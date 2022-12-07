@@ -1,7 +1,7 @@
 import { web } from "@nfjs/back";
 import { registerCustomElementsDir, registerLibDir } from "@nfjs/front-server";
 import path from 'path';
-import { api, api as nfApi, config, extension } from '@nfjs/core';
+import { api, config } from '@nfjs/core';
 import PostgreSQLAdapter from './lib/PostgreSQLAdapter.js';
 import StimulsoftReportProvider from './lib/StimulsoftReportProvider.js';
 
@@ -11,42 +11,18 @@ import glob from 'fast-glob';
 import fs from "fs";
 import tar from "tar";
 
+import { getRenderedReport, getPathByReportName, unpack } from "./lib/utils.js";
+
 const meta = {
     require: {
         after: '@nfjs/back-dbfw'
     }
 };
 
-async function getPathByReportName(reportName, moduleName) {
-    const filePath = moduleName
-        ? await extension.getFiles(`reports/${reportName}.tar.gz`, false, false, false, false, [moduleName])
-        : await extension.getFiles(`reports/${reportName}.tar.gz`);
-    return filePath;
-}
-
-/**
- * Получить данные из архива
- * @param {String} reportPath путь к файлу отчета
- * @param {String} extension расширение файла отчета
- */
-async function unpack(reportPath, extension) {
-    const data = [];
-    await tar.list({
-        file: reportPath,
-        onentry: (entry) => {
-            if (entry.path.endsWith(extension)) {
-                entry.on('data', c => data.push(c));
-            }
-        }
-    });
-
-    return JSON.parse(Buffer.concat(data));
-}
-
 const reportsScopes = '**/reports/*.tar.gz';
 
 const __dirname = path.join(path.dirname(decodeURI(new URL(import.meta.url).pathname))).replace(/^\\([A-Z]:\\)/, "$1");
-let menu = await nfApi.loadJSON(__dirname + '/menu.json');
+let menu = await api.loadJSON(__dirname + '/menu.json');
 
 
 function init() {
@@ -149,11 +125,7 @@ function init() {
         const reportName = context.body.reportName;
         const variables = context.body.variables;
         const options = context.body.options;
-        const filePath = await getPathByReportName(reportName, options && options.module);
-        const reportProvider = new StimulsoftReportProvider();
-
-        const tpl = await unpack(filePath, reportProvider.getFormExtension());
-        const reportData = await reportProvider.getReportForExport(context, variables, tpl, options);
+        const reportData = await getRenderedReport(reportName, variables, options, context);
 
         const headers = {
             'Content-Disposition': `attachment; filename=${encodeURIComponent(reportName)}.${options.extension}`,

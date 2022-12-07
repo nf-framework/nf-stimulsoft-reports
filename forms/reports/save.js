@@ -62,24 +62,11 @@ export default class ReportList extends PlForm {
             this.provider = this.provider;
         }
 
-        this.variables.forEach((variable) => {
-            const variableToAdd = variable;
-            if (this.meta && this.meta.variables) {
-                const existed = this.meta.variables.find(v => v.name === variableToAdd.name);
-                if (existed) {
-                    variableToAdd.type = existed.type;
-                    variableToAdd.userInputRequired = existed.userInputRequired;
-                }
-            }
-
-            this.push('variables', variableToAdd);
-        });
-
         this.$.dsPackages.execute();
     }
 
     onEditTap(event) {
-        this.$.ddEditVariable.execute(event.currentTarget);
+        this.$.ddEditVariable.open(event.currentTarget);
     }
 
     onSaveTap(event) {

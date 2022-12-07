@@ -42,12 +42,10 @@ export default class ReportList extends PlForm {
 
     async onPrintClick(event) {
         try {
-            const checkInfo = await NF.printReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'docx' });
-            this.open('stimulsoft.viewer', { reportName: checkInfo.reportName, variables: checkInfo.data.variables, options: checkInfo.options })
+            NF.printReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'docx' });
         } catch (err) {
             this.notify(err.message);
         }
-        this.$.dsReports.execute();
     }
 
     async onEditClick(event) {
