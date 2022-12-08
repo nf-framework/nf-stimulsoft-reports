@@ -133,7 +133,7 @@ function init() {
         }
 
         context.headers(headers);
-        context.send(reportData);        
+        context.send(reportData.fileStream);        
     });
 
     web.on('POST', '/@reports/list', { middleware: ['session', 'auth', 'json'] }, async (context) => {
