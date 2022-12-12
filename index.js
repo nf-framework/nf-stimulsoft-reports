@@ -1,2 +1,2 @@
-import { getRenderedReport} from "./lib/utils.js";
-export { getRenderedReport };
+import { getRenderedReport, getPathByReportName} from "./lib/utils.js";
+export { getRenderedReport, getPathByReportName };
