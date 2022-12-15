@@ -20,6 +20,8 @@
 		
         let options = new Stimulsoft.Viewer.StiViewerOptions();
         options.appearance.fullScreenMode = true;
+        options.appearance.scrollbarsMode = true;
+        options.toolbar.viewMode = Stimulsoft.Viewer.StiWebViewMode.Continuous;
 
 		this.viewer = new Stimulsoft.Viewer.StiViewer(options);
         this.setReport = function(reportJson) {
@@ -38,7 +40,9 @@
                 Object.entries(variables)
                     .forEach(([name,value]) => {
                         const variable = report.dictionary.variables.getByName(name);
-                        variable.setValue(value);
+                        if(variable) {
+                            variable.setValue(value);
+                        }
                     });
             }
         }
