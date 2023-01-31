@@ -15,10 +15,11 @@ export default class ReportList extends PlForm {
         <pl-flex-layout fit>
             <pl-flex-layout vertical>
                 <pl-button label="Сохранить" variant="primary" on-click="[[onSaveTap]]"></pl-button>
-                <pl-input label="Наименование" id="name" required></pl-input>
-                <pl-textarea label="Описание" required id="description" rows="3" auto-validate="true"></pl-textarea>
+                <pl-input label="Код" id="name" required></pl-input>
+                <pl-input label="Наименование" id="reportName" required></pl-input>
+                <pl-textarea label="Описание" required id="description"></pl-textarea>
                 <pl-input label="Провайдер" value="{{provider}}" readonly></pl-input>
-                <pl-combobox label="Модуль" required data="{{packages}}" value-property="fullpath" id="module" text-property="path"></pl-combobox>
+                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" id="module" text-property="path"></pl-combobox>
             </pl-flex-layout>
             <pl-flex-layout fit>
                 <pl-grid selected="{{activeVariable}}" data="{{variables}}">
@@ -53,6 +54,7 @@ export default class ReportList extends PlForm {
     onConnect() {
         if (this.meta) {
             this.$.name.value = this.meta.name;
+            this.$.reportName.value = JSON.parse(this.reportJson).ReportName;
             this.$.description.value = this.meta.description;
             this.$.module.value = this.meta.module;
             this.renderEngine = this.meta.renderEngine;
@@ -69,11 +71,12 @@ export default class ReportList extends PlForm {
         this.$.ddEditVariable.open(event.currentTarget);
     }
 
-    onSaveTap(event) {
-        this.$.aSave.execute({
+   async onSaveTap(event) {
+       await this.$.aSave.execute({
             jsonData: JSON.stringify(this.reportJson),
             metaInfo: JSON.stringify({
                 name: this.$.name.value,
+                reportName: JSON.parse(this.reportJson).ReportName,
                 module: this.$.module.value,
                 description: this.$.description.value,
                 variables: this.variables,
@@ -82,5 +85,7 @@ export default class ReportList extends PlForm {
             }),
             modulePath: this.$.module.value
         });
+
+        this.notify('Отчет успешно сохранен');
     }
 }

@@ -159,6 +159,7 @@ function init() {
                     const json = JSON.parse(buf);
                     result.push({
                         name: json.name,
+                        reportName: json.reportName,
                         moduleName: json.moduleName,
                         description: json.description,
                         path: pathToFile
@@ -174,7 +175,7 @@ function init() {
         const reportTpl = context.body.args.jsonData;
         const modulePath = context.body.args.modulePath;
         const reportMeta = JSON.parse(context.body.args.metaInfo);
-        const packageJson = JSON.parse(fs.readFileSync(path.join(modulePath, 'package.json')));
+        const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), modulePath, 'package.json')));
         reportMeta.moduleName = packageJson.name;
         const reportDir = path.join(modulePath, 'reports', reportMeta.name);
         const metaPath = path.join(modulePath, 'reports', reportMeta.name, `${reportMeta.name}_meta.json`);
