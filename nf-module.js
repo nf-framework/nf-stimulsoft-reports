@@ -80,6 +80,7 @@ function init() {
             
             context.send({
                 showForm: 'stimulsoft.viewer',
+                fileName: metaData.reportName + '.' + options.extension,
                 variables: variablesToShow,
                 renderEngine: metaData.renderEngine,
                 provider: metaData.provider
@@ -128,7 +129,7 @@ function init() {
         const reportData = await getRenderedReport(reportName, variables, options, context);
 
         const headers = {
-            'Content-Disposition': `attachment; filename=${encodeURIComponent(reportName)}.${options.extension}`,
+            'Content-Disposition': `attachment; filename=${encodeURIComponent(reportData.fileName)}`,
             'Content-Transfer-Encoding': 'binary'
         }
 
