@@ -1,6 +1,6 @@
 {
     "name": "@nfjs/stimulsoft-reports",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "StimulsoftReports",
     "license": "MIT",
     "type": "module",
@@ -27,6 +27,10 @@
         "./nf-module.js": "./nf-module.js"
     },
     "dependencies": {
+        "@nfjs/back": "^1.0.6",
+        "@nfjs/front-server": "^1.0.6",
+        "@nfjs/core":"^1.0.4",
+        "@nfjs/back-dbfw": "^1.0.10",
         "stimulsoft-reports-js": "^2022.4.5",
         "stimulsoft-data-adapter": "^2022.4.5",
         "tar": "^6.1.11",
