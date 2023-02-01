@@ -16,12 +16,10 @@ export default class ReportList extends PlForm {
             <pl-flex-layout vertical>
                 <pl-valid-observer invalid="{{invalid}}"></pl-valid-observer>
                 <pl-input label="Код" required value="{{meta.name}}"></pl-input>
-                <pl-input label="Наименование" required value="{{meta.name}}"></pl-input>
-        
+                <pl-input label="Наименование" required value="{{meta.reportName}}"></pl-input>
                 <pl-textarea label="Описание" required value="{{meta.description}}"></pl-textarea>
                 <pl-input label="Провайдер" value="{{provider}}" readonly value="{{meta.provider}}"></pl-input>
-                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" text-property="path">
-                </pl-combobox>
+                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" text-property="path" value="{{meta.module}}"></pl-combobox>
                 <pl-button label="Сохранить" variant="primary" on-click="[[onSaveTap]]" disabled="[[invalid]]">
                     <pl-icon iconset="pl-default" icon="save" slot="prefix"></pl-icon>
                 </pl-button>
