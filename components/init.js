@@ -1,11 +1,10 @@
-NF.openReport = async (reportCode, variables, extension, options) => new Promise(async (resolve, reject) => {
+NF.openReport = async (reportName, variables, options) => new Promise(async (resolve, reject) => {
     try {
         const resp = await fetch('/@reports/checkReportData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 reportName: reportName,
-                extension: extension,
                 variables: variables,
                 options: options
             }),

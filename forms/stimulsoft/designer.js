@@ -48,9 +48,10 @@ export default class ReportList extends PlForm {
             }
         });
     }
-    async onSaveTap(event) {
+    async onSaveTap() {
         const vars = await this.$.designer.getVariables();
         const res = await this.$.designer.getReportJson();
+        this.meta.reportName = this.$.designer.getReportName();
         this.open('reports.save', {
             reportJson: res,
             variables: vars,

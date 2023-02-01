@@ -43,6 +43,10 @@ connectedCallback(){
         this.$.designer.contentWindow.setProvider(provider);
     }
 
+    getReportName() {
+        return this.$.designer.contentWindow.stiDesigner.report._reportName;
+    }
+
     async getVariables() {
         const variables = this.$.designer.contentWindow.stiDesigner.report.getDictionary().variables.list.map(x => ({ name: x.alias }));
         return variables;

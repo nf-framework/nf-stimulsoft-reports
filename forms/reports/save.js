@@ -7,19 +7,24 @@ export default class ReportList extends PlForm {
         reportJson: { type: String, value: null },
         variables: { type: Array, value: () => [] },
         meta: { type: Object, value: null },
-        provider: { type: String, value: null },
-        packages: { type: Array, value: () => [] }
+        packages: { type: Array, value: () => [] },
+        invalid: { type: Boolean, value: false }
     }
 
     static template = html`
         <pl-flex-layout fit>
             <pl-flex-layout vertical>
-                <pl-button label="Сохранить" variant="primary" on-click="[[onSaveTap]]"></pl-button>
-                <pl-input label="Код" id="name" required></pl-input>
-                <pl-input label="Наименование" id="reportName" required></pl-input>
-                <pl-textarea label="Описание" required id="description"></pl-textarea>
-                <pl-input label="Провайдер" value="{{provider}}" readonly></pl-input>
-                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" id="module" text-property="path"></pl-combobox>
+                <pl-valid-observer invalid="{{invalid}}"></pl-valid-observer>
+                <pl-input label="Код" required value="{{meta.name}}"></pl-input>
+                <pl-input label="Наименование" required value="{{meta.name}}"></pl-input>
+        
+                <pl-textarea label="Описание" required value="{{meta.description}}"></pl-textarea>
+                <pl-input label="Провайдер" value="{{provider}}" readonly value="{{meta.provider}}"></pl-input>
+                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" text-property="path">
+                </pl-combobox>
+                <pl-button label="Сохранить" variant="primary" on-click="[[onSaveTap]]" disabled="[[invalid]]">
+                    <pl-icon iconset="pl-default" icon="save" slot="prefix"></pl-icon>
+                </pl-button>
             </pl-flex-layout>
             <pl-flex-layout fit>
                 <pl-grid selected="{{activeVariable}}" data="{{variables}}">
@@ -40,11 +45,9 @@ export default class ReportList extends PlForm {
         </pl-flex-layout>
         <pl-dropdown id="ddEditVariable" default-padding="true" data="{{activeVariable}}">
             <pl-flex-layout vertical>
-                <pl-input label="Код" value="{{activeVariable.name}}" readonly="true" id="editCode"></pl-input>
-                <pl-combobox data="[[types]]" label="Тип" id="editType" value="{{activeVariable.type}}" text-property="text">
-                </pl-combobox>
-                <pl-checkbox label="Ручной ввод" id="editUserInput" value="{{activeVariable.userInputRequired}}">
-                </pl-checkbox>
+                <pl-input label="Код" value="{{activeVariable.name}}" readonly></pl-input>
+                <pl-combobox data="[[types]]" label="Тип" value="{{activeVariable.type}}" text-property="text"></pl-combobox>
+                <pl-checkbox label="Ручной ввод" value="{{activeVariable.userInputRequired}}"></pl-checkbox>
             </pl-flex-layout>
         </pl-dropdown>
         <pl-dataset data="{{packages}}" endpoint="/@reports/listPackages" id="dsPackages"></pl-dataset>
@@ -52,18 +55,6 @@ export default class ReportList extends PlForm {
     `;
 
     onConnect() {
-        if (this.meta) {
-            this.$.name.value = this.meta.name;
-            this.$.reportName.value = JSON.parse(this.reportJson).ReportName;
-            this.$.description.value = this.meta.description;
-            this.$.module.value = this.meta.module;
-            this.renderEngine = this.meta.renderEngine;
-            this.provider = this.provider;
-        } else {
-            this.renderEngine = this.renderEngine;
-            this.provider = this.provider;
-        }
-
         this.$.dsPackages.execute();
     }
 
@@ -71,21 +62,25 @@ export default class ReportList extends PlForm {
         this.$.ddEditVariable.open(event.currentTarget);
     }
 
-   async onSaveTap(event) {
-       await this.$.aSave.execute({
-            jsonData: JSON.stringify(this.reportJson),
-            metaInfo: JSON.stringify({
-                name: this.$.name.value,
-                reportName: JSON.parse(this.reportJson).ReportName,
-                module: this.$.module.value,
-                description: this.$.description.value,
-                variables: this.variables,
-                renderEngine: this.renderEngine,
-                provider: this.provider
-            }),
-            modulePath: this.$.module.value
-        });
-
-        this.notify('Отчет успешно сохранен');
+    async onSaveTap() {
+        try {
+            await this.$.aSave.execute({
+                jsonData: JSON.stringify(this.reportJson),
+                metaInfo: JSON.stringify({
+                    name: this.meta.name,
+                    reportName: this.meta.reportName,
+                    module: this.meta.module,
+                    description: this.meta.description,
+                    variables: this.variables,
+                    provider: this.meta.provider
+                }),
+                modulePath: this.meta.module
+            });
+            
+            this.notify('Отчет успешно сохранен');
+        }
+        catch(err) {
+            this.notify('Ошибка при сохранении отчета', { type: 'error', header: 'Ошибка', timeout: 0, icon: 'close-circle' });
+        }
     }
 }

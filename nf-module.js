@@ -81,6 +81,7 @@ function init() {
             context.send({
                 showForm: 'stimulsoft.viewer',
                 fileName: metaData.reportName + '.' + options.extension,
+                options: metaData.options,
                 variables: variablesToShow,
                 renderEngine: metaData.renderEngine,
                 provider: metaData.provider
