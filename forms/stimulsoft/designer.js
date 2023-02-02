@@ -7,6 +7,9 @@ export default class ReportList extends PlForm {
         providers: { value: () => [] },
         provider: { value: () => null, observer: '_providerObserver' },
         reportName: { value: () => null },
+        meta: { value:() => {
+            reportName: 'Report'
+        }},
         designerLoaded: { type: Boolean, value: false}
     }
 
@@ -43,6 +46,7 @@ export default class ReportList extends PlForm {
                 this.provider = this.meta.provider || 'default';
             }
             else {
+                this.meta = { reportName: 'Report' };
                 this.$.designer.setNewReport();
                 this.provider = this.providers.length > 0 ? this.providers[0].value : 'default';
             }
