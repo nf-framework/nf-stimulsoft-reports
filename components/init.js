@@ -54,7 +54,7 @@ NF.printReport = async (reportName, variables, options) => new Promise(async (re
             var a = document.createElement("a");
             document.body.appendChild(a);
             a.href = url;
-            a.download = responseData.fileName;
+            a.download = options.customFileName ? `${options.customFileName}.${options.extension}` : responseData.fileName;
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
