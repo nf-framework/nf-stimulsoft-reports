@@ -4,6 +4,7 @@ import path from 'path';
 import { api, config } from '@nfjs/core';
 import PostgreSQLAdapter from './lib/PostgreSQLAdapter.js';
 import StimulsoftReportProvider from './lib/StimulsoftReportProvider.js';
+import Stimulsoft from 'stimulsoft-reports-js';
 
 import adapter from "stimulsoft-data-adapter";
 import glob from 'fast-glob';
@@ -31,6 +32,7 @@ function init() {
     registerLibDir('iframe/stimulsoft-viewer.html', __dirname + '/iframe/stimulsoft-viewer.html', { singleFile: true })
     registerLibDir('stimulsoft-reports-js', null, { denyPathReplace: true, minify: 'deny' });
     registerLibDir('file-saver');
+    Stimulsoft.Base.StiFontCollection.setOpentypeFontsFolder(path.join(__dirname, 'fonts'));
 
     web.on('POST', '/@stimulsoft/adapter', { middleware: ['session', 'auth', 'json'] }, (context) => {
         const onProcess = function (result) {
