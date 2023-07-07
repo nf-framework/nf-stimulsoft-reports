@@ -22,7 +22,9 @@
         let options = new Stimulsoft.Designer.StiDesignerOptions();
         options.appearance.fullScreenMode = true;
         this.stiDesigner = new Stimulsoft.Designer.StiDesigner(options);
-
+        StiOptions.Export.Word.spaceBetweenCharacters = -4;
+        StiOptions.Export.Word.lineSpacing = 1;
+        StiOptions.Export.Word.bottomMarginCorrection = 0;
 
         this.setReport = (reportJson) => {
             const report = new Stimulsoft.Report.StiReport();
