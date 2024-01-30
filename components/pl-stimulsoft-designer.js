@@ -1,5 +1,4 @@
 import { PlElement, html, css } from "polylib";
-import { requestData } from "@nfjs/front-pl";
 
 class PlStimulsoftDesigner extends PlElement {
     static css = css`
@@ -17,20 +16,6 @@ class PlStimulsoftDesigner extends PlElement {
     static template = html`
         <iframe id="designer" src="iframe/stimulsoft-designer.html"></iframe>
     `;
-
-connectedCallback(){
-    super.connectedCallback();
-    this.$.designer.addEventListener('load', () => {
-        requestData("@stimulsoft/key", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        }).then((resp) => {
-            resp.json().then((key) => {
-                this.$.designer.contentWindow.setLicense(key.data);
-            });
-        });
-    })
-}
 
     setReport(reportJson) {
         this.$.designer.contentWindow.setReport(reportJson);

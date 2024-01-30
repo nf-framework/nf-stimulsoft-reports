@@ -1,6 +1,8 @@
 import { web } from "@nfjs/back";
-import { registerCustomElementsDir, registerLibDir } from "@nfjs/front-server";
+import { registerLibDir, prepareResponse, getCacheKey, registerCustomElementsDir } from '@nfjs/front-server';
 import path from 'path';
+import mime from 'mime';
+import { Readable } from "stream";
 import { api, config } from '@nfjs/core';
 import PostgreSQLAdapter from './lib/PostgreSQLAdapter.js';
 import StimulsoftReportProvider from './lib/StimulsoftReportProvider.js';
@@ -24,11 +26,38 @@ const reportsScopes = '**/reports/*.tar.gz';
 const __dirname = path.join(path.dirname(decodeURI(new URL(import.meta.url).pathname))).replace(/^\\([A-Z]:\\)/, "$1");
 let menu = await api.loadJSON(__dirname + '/menu.json');
 
+function streamToBuffer(stream) {
+    const chunks = [];
+    return new Promise((resolve, reject) => {
+        stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+        stream.on('error', (err) => reject(err));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+    })
+}
+
 
 function init() {
     registerCustomElementsDir('@nfjs/stimulsoft-reports/components');
-    registerLibDir('iframe/stimulsoft-designer.html', __dirname + '/iframe/stimulsoft-designer.html', { singleFile: true })
-    registerLibDir('iframe/stimulsoft-viewer.html', __dirname + '/iframe/stimulsoft-viewer.html', { singleFile: true })
+
+    web.on('GET', '/iframe/stimulsoft-*', {}, async context => {
+        let requestPath = __dirname + `/iframe/stimulsoft-${context.params['*']}`;
+        const customOptions = context.customOptions;
+        const cacheKey = getCacheKey(requestPath, customOptions);
+        const response = await prepareResponse(cacheKey,
+            { customOptions, mimeType: mime.getType(requestPath) },
+            async () =>  {
+                let buffer = await streamToBuffer(fs.createReadStream(requestPath));
+                let htmlText = buffer.toString().replace('//Stimulsoft.Base.StiLicense.key', `Stimulsoft.Base.StiLicense.key = '${config['@nfjs/stimulsoft-reports']?.license}'`);
+                var s = new Readable();
+                s.push(htmlText);
+                s.push(null);
+
+                return s;
+            });
+        context.headers(response.headers);
+        context.send(response.stream);
+    });
+
     registerLibDir('stimulsoft-reports-js', null, { denyPathReplace: true, minify: 'deny' });
     registerLibDir('file-saver');
 

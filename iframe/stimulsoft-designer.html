@@ -16,6 +16,8 @@
 
     <!-- Report designer scripts, may be external -->
     <script type="text/javascript">
+        //Stimulsoft.Base.StiLicense.key;
+
         StiOptions.WebServer.url = '@stimulsoft/adapter';
         Stimulsoft.Base.Localization.StiLocalization.setLocalizationFile("static/localizations/ru.xml", true);
 
@@ -39,10 +41,6 @@
 
         this.setProvider = (provider) => {
             this.provider = provider;
-        }
-
-        this.setLicense = (key) => {
-            Stimulsoft.Base.StiLicense.key = key;
         }
 
         this.stiDesigner.onBeginProcessData = (e) => {

@@ -17,7 +17,8 @@
     <script type="text/javascript">
 		StiOptions.WebServer.url = '@stimulsoft/adapter';
         Stimulsoft.Base.Localization.StiLocalization.setLocalizationFile("static/localizations/ru.xml", true);
-		
+        //Stimulsoft.Base.StiLicense.key;
+
         let options = new Stimulsoft.Viewer.StiViewerOptions();
         options.appearance.fullScreenMode = true;
         options.appearance.scrollbarsMode = true;
@@ -30,9 +31,6 @@
 			this.viewer.report = report;
 		}
 
-		this.setLicense = (key) => {
-            Stimulsoft.Base.StiLicense.key = key;
-		}
         this.setVariables = variables =>
         {
             let report = this.viewer.report;
