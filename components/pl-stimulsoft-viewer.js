@@ -1,4 +1,5 @@
 import { PlElement, html, css } from "polylib";
+import { requestData } from "@nfjs/front-pl";
 
 class PlStimulsoftDesigner extends PlElement {
     static css = css`
@@ -20,7 +21,7 @@ class PlStimulsoftDesigner extends PlElement {
     connectedCallback() {
         super.connectedCallback();
         this.$.viewer.addEventListener('load', () => {
-            fetch("@stimulsoft/key", {
+            requestData("@stimulsoft/key", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
             }).then((resp) => {

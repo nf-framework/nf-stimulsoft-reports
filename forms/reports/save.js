@@ -6,9 +6,36 @@ export default class ReportList extends PlForm {
         formTitle: { type: String, value: 'Сохранение отчета' },
         reportJson: { type: String, value: null },
         variables: { type: Array, value: () => [] },
-        meta: { type: Object, value: null },
+        meta: {
+            type: Object, value: () => ({
+                name: null,
+                reportName: null,
+                description: null,
+                provider: null,
+                module: null,
+                useClientTimezone: false,
+                useSelectedTimeZone: false,
+                timezone: null
+            })
+        },
         packages: { type: Array, value: () => [] },
-        invalid: { type: Boolean, value: false }
+        extensions: {
+            type: Array, 
+            value: () => [{
+                name: 'Excel',
+                extension: 'xlsx'
+            },
+            {
+                name: 'Word',
+                extension: 'docx'
+            },
+            {
+                name: 'PDF',
+                extension: 'pdf'
+            }]
+        },
+        invalid: { type: Boolean, value: false },
+        timezones: { type: Array, value: [] }
     }
 
     static template = html`
@@ -18,8 +45,11 @@ export default class ReportList extends PlForm {
                 <pl-input label="Код" required value="{{meta.name}}"></pl-input>
                 <pl-input label="Наименование" required value="{{meta.reportName}}"></pl-input>
                 <pl-textarea label="Описание" required value="{{meta.description}}"></pl-textarea>
-                <pl-input label="Провайдер" value="{{provider}}" readonly value="{{meta.provider}}"></pl-input>
-                <pl-combobox label="Модуль" required data="{{packages}}" value-property="path" text-property="path" value="{{meta.module}}"></pl-combobox>
+                <pl-input label="Провайдер" readonly value="{{meta.provider}}"></pl-input>
+                <pl-combobox label="Модуль" required data="{{packages}}" value-property="moduleName" text-property="moduleName" value="{{meta.module}}"></pl-combobox>
+                <pl-checkbox disabled="[[meta.timezone]]" checked="{{meta.useClientTimezone}}" caption="Использовать клиентскую таймзону"></pl-checkbox>
+                <pl-combobox disabled="[[meta.useClientTimezone]]" label="Использовать выбранную таймзону" data="{{timezones}}" value-property="timezone" text-property="timezone" value="{{meta.timezone}}"></pl-combobox>
+                <pl-combobox label="Предпочитаемый формат" data="{{extensions}}" value-property="extension" text-property="name" value="{{meta.extension}}"></pl-combobox>
                 <pl-button label="Сохранить" variant="primary" on-click="[[onSaveTap]]" disabled="[[invalid]]">
                     <pl-icon iconset="pl-default" icon="save" slot="prefix"></pl-icon>
                 </pl-button>
@@ -54,6 +84,7 @@ export default class ReportList extends PlForm {
 
     onConnect() {
         this.$.dsPackages.execute();
+        this.timezones = Intl.supportedValuesOf('timeZone').map(x => ({ timezone: x }));
     }
 
     onEditTap(event) {
@@ -64,20 +95,12 @@ export default class ReportList extends PlForm {
         try {
             await this.$.aSave.execute({
                 jsonData: JSON.stringify(this.reportJson),
-                metaInfo: JSON.stringify({
-                    name: this.meta.name,
-                    reportName: this.meta.reportName,
-                    module: this.meta.module,
-                    description: this.meta.description,
-                    variables: this.variables,
-                    provider: this.meta.provider
-                }),
-                modulePath: this.meta.module
+                metaInfo: JSON.stringify(this.meta)
             });
-            
+
             this.notify('Отчет успешно сохранен');
         }
-        catch(err) {
+        catch (err) {
             this.notify('Ошибка при сохранении отчета', { type: 'error', header: 'Ошибка', timeout: 0, icon: 'close-circle' });
         }
     }

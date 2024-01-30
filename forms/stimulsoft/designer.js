@@ -56,11 +56,12 @@ export default class ReportList extends PlForm {
         const vars = await this.$.designer.getVariables();
         const res = await this.$.designer.getReportJson();
         this.meta.reportName = this.$.designer.getReportName();
+        this.meta.provider = this.provider;
+        this.meta.variables = vars
+
         this.open('reports.save', {
             reportJson: res,
-            variables: vars,
-            meta: this.meta,
-            provider: this.provider
+            meta: this.meta
         });
     }
     async onClose() {

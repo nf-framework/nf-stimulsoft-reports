@@ -11,10 +11,11 @@ export default class ReportList extends PlForm {
     static template = html`
         <pl-flex-layout fit>
             <pl-grid data="{{reports}}" control="{{reports_control}}" selected="{{selected}}">
-                <pl-grid-column field="name" header="Код"></pl-grid-column>
-                <pl-grid-column field="reportName" header="Наименование"></pl-grid-column>
-                <pl-grid-column field="moduleName" header="Модуль"></pl-grid-column>
-                <pl-grid-column field="description" header="Описание"></pl-grid-column>
+                <pl-grid-column field="name" header="Код отчета"></pl-grid-column>
+                <pl-grid-column field="options.reportName" header="Наименование"></pl-grid-column>
+                <pl-grid-column field="options.moduleName" header="Модуль"></pl-grid-column>
+                <pl-grid-column field="options.extension" header="Формат"></pl-grid-column>
+                <pl-grid-column field="options.description" header="Описание"></pl-grid-column>
                 <pl-flex-layout slot="top-toolbar">
                     <pl-button label="Новый отчет" variant="primary" on-click="[[onNewClick]]">
                         <pl-icon iconset="pl-default" icon="report" slot="prefix"></pl-icon>
@@ -47,12 +48,7 @@ export default class ReportList extends PlForm {
     }
 
     async onOpenClick() {
-        try {
-            const checkInfo = await NF.openReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'xlsx' });
-            this.open('stimulsoft.viewer', { reportName: checkInfo.reportName, variables: checkInfo.data.variables, options: checkInfo.options })
-        } catch (err) {
-            this.notify(err.message);
-        }
+        await this.open('stimulsoft.viewer', { reportName: this.selected.name, variables: {}, options: this.selected.options })
         this.$.dsReports.execute();
     }
 
@@ -62,7 +58,7 @@ export default class ReportList extends PlForm {
 
     async onPrintExcel() {
         try {
-            NF.printReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'xlsx' });
+            NF.printReport(this.selected.name, null, Object.assign(this.selected.options, { extension: 'xlsx'}));
         } catch (err) {
             this.notify(err.message);
         }
@@ -70,7 +66,7 @@ export default class ReportList extends PlForm {
 
     async onPrintWord() {
         try {
-            NF.printReport(this.selected.name, null, { module: this.selected.moduleName, extension: 'docx' });
+            NF.printReport(this.selected.name, null, Object.assign(this.selected.options, { extension: 'docx'}));
         } catch (err) {
             this.notify(err.message);
         }

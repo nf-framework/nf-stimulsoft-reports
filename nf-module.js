@@ -4,7 +4,6 @@ import path from 'path';
 import { api, config } from '@nfjs/core';
 import PostgreSQLAdapter from './lib/PostgreSQLAdapter.js';
 import StimulsoftReportProvider from './lib/StimulsoftReportProvider.js';
-import Stimulsoft from 'stimulsoft-reports-js';
 
 import adapter from "stimulsoft-data-adapter";
 import glob from 'fast-glob';
@@ -78,7 +77,7 @@ function init() {
                 varToShow.userInputRequired = variable.userInputRequired;
                 variablesToShow.push(varToShow);
             });
-            
+
             context.send({
                 showForm: 'stimulsoft.viewer',
                 fileName: metaData.reportName + '.' + options.extension,
@@ -136,7 +135,7 @@ function init() {
         }
 
         context.headers(headers);
-        context.send(reportData.fileStream);        
+        context.send(reportData.fileStream);
     });
 
     web.on('POST', '/@reports/list', { middleware: ['session', 'auth', 'json'] }, async (context) => {
@@ -160,11 +159,10 @@ function init() {
                 .then((err) => {
                     const buf = Buffer.concat(data);
                     const json = JSON.parse(buf);
+                    json.path = pathToFile;
                     result.push({
                         name: json.name,
-                        reportName: json.reportName,
-                        moduleName: json.moduleName,
-                        description: json.description,
+                        options: json,
                         path: pathToFile
                     });
                 });
@@ -176,10 +174,8 @@ function init() {
 
     web.on('POST', '/@reports/saveReport', { middleware: ['session', 'auth', 'json'] }, async (context) => {
         const reportTpl = context.body.args.jsonData;
-        const modulePath = context.body.args.modulePath;
         const reportMeta = JSON.parse(context.body.args.metaInfo);
-        const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), modulePath, 'package.json')));
-        reportMeta.moduleName = packageJson.name;
+        const modulePath = path.join(process.cwd(), 'node_modules', reportMeta.module);
         const reportDir = path.join(modulePath, 'reports', reportMeta.name);
         const metaPath = path.join(modulePath, 'reports', reportMeta.name, `${reportMeta.name}_meta.json`);
         const tplPath = path.join(modulePath, 'reports', reportMeta.name, `${reportMeta.name}.mrt`);
