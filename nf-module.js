@@ -73,7 +73,7 @@ function init() {
 
         context.req.on('end', () => {
             const command = adapter.getCommand(data);
-            if (command.database === 'PostgreSQL') PostgreSQLAdapter(command, onProcess, context, command.provider);
+            if (command.database === 'PostgreSQL') PostgreSQLAdapter(command, onProcess, context, { provider: command.provider });
         });
     });
 
