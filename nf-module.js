@@ -169,10 +169,12 @@ function init() {
 
     web.on('POST', '/@reports/list', { middleware: ['session', 'auth', 'json'] }, async (context) => {
         const modulesRoot = path.join(process.cwd(), 'node_modules');
-        const result = [];
+        let result = [];
         const reports = await glob(reportsScopes, {
             cwd: modulesRoot, followSymlinkedDirectories: true
         });
+        const flt = context.body.args.flt,
+              sort = context.body.control.sorts
 
         await Promise.all(reports.map((mod) => {
             const data = [];
@@ -189,13 +191,38 @@ function init() {
                     const buf = Buffer.concat(data);
                     const json = JSON.parse(buf);
                     json.path = pathToFile;
-                    result.push({
-                        name: json.name,
-                        options: json,
-                        path: pathToFile
-                    });
+
+                    // filters
+                    for (let f in flt) {
+                        if (flt[f] && !(json[f] || '').toLowerCase().includes(flt[f].toLowerCase())) return
+                    }
+                    
+                    result.push(json);
                 });
         }));
+
+        // sort
+        const sorted = sort.length ? result.sort((a, b) => {
+            let res = 0;
+
+            for (let s of sort) {
+                let { field, sort } = s;
+                field = field.split('.')[1] || field
+                if (!sort) continue
+                res = (a[field] || '').toLowerCase() === (b[field] || '').toLowerCase() ? 0 : (a[field] || '').toLowerCase() > (b[field] || '').toLowerCase() ? 1 : -1;
+                if (res !== 0) {
+                    return sort === 'asc' ? res : -res;
+                }
+            }
+
+            return res;
+        }) : result
+
+        result = result.map(i => ({
+            name: i.name,
+            options: i,
+            path: i.path
+        }))
 
         context.send({ data: result });
     });
