@@ -16,7 +16,7 @@ export default class ReportList extends PlForm {
                 <pl-filter-container data="{{dtList}}" id="fltrContainer">
                     <pl-input label="Код отчета" value="{{flt.name}}"></pl-input>
                     <pl-input label="Наименование" value="{{flt.reportName}}"></pl-input>
-                    <pl-input label="Модуль" value="{{flt.moduleName}}"></pl-input>
+                    <pl-input label="Модуль" value="{{flt.module}}"></pl-input>
                     <pl-input label="Описание" value="{{flt.description}}"></pl-input>
 
                     <pl-button variant="ghost" label="Найти" on-click="[[onSearch]]" loading="[[loading]]">
@@ -31,7 +31,7 @@ export default class ReportList extends PlForm {
                 <pl-grid data="{{reports}}" control="{{reports_control}}" selected="{{selected}}">
                     <pl-grid-column field="name" header="Код отчета" resizable sortable></pl-grid-column>
                     <pl-grid-column field="options.reportName" header="Наименование" resizable sortable></pl-grid-column>
-                    <pl-grid-column field="options.moduleName" header="Модуль" resizable sortable></pl-grid-column>
+                    <pl-grid-column field="options.module" header="Модуль" resizable sortable></pl-grid-column>
                     <pl-grid-column field="options.description" header="Описание" resizable sortable></pl-grid-column>
                     <pl-flex-layout slot="top-toolbar">
                         <pl-button label="Новый отчет" variant="primary" on-click="[[onNewClick]]">
